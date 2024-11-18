@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Agendar Consulta - PersonalFit{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Agendar Consulta</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn">Agendar</button>
+    </form>
+    <a href="{% url 'student_dashboard' %}" class="btn-outline">Voltar</a>
+</div>
+{% endblock %}

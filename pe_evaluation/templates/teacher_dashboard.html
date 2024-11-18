@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard do Professor - PersonalFit{% endblock %}
+
+{% block content %}
+<section class="section-modern">
+    <div class="dashboard-container">
+        <h2>Dashboard do Professor</h2>
+        <div class="dashboard-menu">
+            <a href="{% url 'teacher_students' %}" class="btn">Alunos</a>
+            <a href="{% url 'teacher_appointments' %}" class="btn-outline">Agendamentos</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

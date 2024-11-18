@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard do Aluno - PersonalFit{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Usuário -->
+    <div class="header">
+        <p>Bem-vindo, {{ student.user.username }}!</p>
+    </div>
+
+    <!-- Botões de Navegação -->
+    <div class="dashboard-menu">
+        <a href="{% url 'student_update' %}" class="btn">Atualizar Informações</a>
+        <a href="{% url 'student_training_plans' %}" class="btn-outline">Planos de Treino</a>
+        <a href="{% url 'schedule_appointment' %}" class="btn-outline">Agendamento</a>
+    </div>
+
+    <!-- Contêiner do Dashboard -->
+    <div class="dashboard-content">
+        <h2>Dashboard</h2>
+
+        <!-- Métricas de Peso -->
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-title">Peso Atual</div>
+                <div class="metric-value">{{ current_weight }} kg</div>
+                <div class="metric-trend">{{ weight_trend }}</div>
+                <div class="metric-title">Mudança de Peso</div>
+                <div class="metric-value">{{ percentage_change|floatformat:2 }}%</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-title">IMC</div>
+                <div class="metric-value">{{ bmi|floatformat:2 }}</div>
+                <div class="metric-trend">{{ bmi_category }}</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-title">Objetivo</div>
+                <div class="metric-value">{{ student.goal }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

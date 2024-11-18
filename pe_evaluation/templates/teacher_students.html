@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Alunos - Dashboard do Professor{% endblock %}
+
+{% block content %}
+<section class="section-modern">
+    <div class="dashboard-container">
+        <h2>Alunos</h2>
+        <div class="students-list">
+            {% if students %}
+                <div class="student-cards">
+                    {% for student in students %}
+                        <div class="student-card">
+                            <h4>{{ student.username }}</h4>
+                            <p><strong>Idade:</strong> {% if student.student %}{{ student.student.age }}{% else %}N/A{% endif %}</p>
+                            <p><strong>Altura:</strong> {% if student.student %}{{ student.student.height }} m{% else %}N/A{% endif %}</p>
+                            <p><strong>Peso:</strong> {% if student.student %}{{ student.student.weight }} kg{% else %}N/A{% endif %}</p>
+                            <p><strong>Objetivo:</strong> {% if student.student %}{{ student.student.goal }}{% else %}N/A{% endif %}</p>
+                            <a href="{% url 'assign_training_plan' student.id %}" class="btn btn-small">Atribuir Treino</a>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p>Nenhum aluno registrado ainda.</p>
+            {% endif %}
+        </div>
+        <!-- Botão Voltar -->
+        <a href="{% url 'teacher_dashboard' %}" class="btn back-button">Voltar</a>
+    </div>
+</section>
+{% endblock %}

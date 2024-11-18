@@ -1,0 +1,95 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PersonalFit - Sua Solução de Treino Personalizado</title>
+    <link rel="stylesheet" href="{% static 'css/landing.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="header-modern">
+        <nav class="nav-transparent">
+            <div class="logo">PersonalFit</div>
+            <ul>
+                <li><a href="#about">Sobre</a></li>
+                <li><a href="#benefits">Benefícios</a></li>
+                <li><a href="#testimonials">Depoimentos</a></li>
+                <li><a href="{% url 'login' %}" class="btn">Entrar</a></li>
+                <li><a href="{% url 'register' %}" class="btn btn-primary">Cadastrar</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section id="hero" class="hero-modern">
+            <div class="hero-text">
+                <h1 class="hero-title">Transforme seu Corpo Transforme sua Vida</h1>
+                <p class="hero-subtitle">Obtenha planos de treino personalizados.</p>
+                <div class="hero-buttons">
+                    <a href="{% url 'register' %}" class="btn btn-large">Comece sua Jornada</a>
+                    <a href="#about" class="btn btn-outline">Saiba Mais</a>
+                </div>
+            </div>
+            <div class="hero-image">
+                <img src="{% static 'img/personalized.svg' %}" alt="Personal Trainer" class="hero-img-responsive">
+            </div>
+        </section>
+
+        <section id="about" class="section-modern">
+            <div class="about-content">
+                <h2>Sobre o PersonalFit</h2>
+                <p>O PersonalFit conecta você a especialistas em treinamento...</p>
+            </div>
+            <div class="about-image-container">
+                <img src="{% static 'img/about.svg' %}" alt="Sobre PersonalFit" class="about-image">
+            </div>
+        </section>
+
+        <section id="benefits" class="section-modern">
+            <h2>Benefícios do PersonalFit</h2>
+            <div class="benefits-grid">
+                <div class="benefit-item">
+                    <img src="{% static 'img/workout1.svg' %}" alt="Planos Personalizados">
+                    <h3>Planos Personalizados</h3>
+                    <p>Receba rotinas de exercícios desenvolvidas especialmente para você.</p>
+                </div>
+                <div class="benefit-item">
+                    <img src="{% static 'img/workout2.svg' %}" alt="Orientação Especializada">
+                    <h3>Orientação Especializada</h3>
+                    <p>Aprenda com profissionais certificados em educação física.</p>
+                </div>
+                <div class="benefit-item">
+                    <img src="{% static 'img/workout3.svg' %}" alt="Acompanhamento de Progresso">
+                    <h3>Acompanhamento de Progresso</h3>
+                    <p>Monitore sua evolução com nosso painel fácil de usar.</p>
+                </div>
+                <div class="benefit-item">
+                    <img src="{% static 'img/workout4.svg' %}" alt="Horário Flexível">
+                    <h3>Horário Flexível</h3>
+                    <p>Treine no seu tempo, com planos que se encaixam no seu estilo de vida.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="testimonials" class="section-modern">
+            <h2>O que Nossos Usuários Dizem</h2>
+            <div class="testimonial-grid">
+                <div class="testimonial-item">
+                    <p>"Graças ao PersonalFit, alcancei meus objetivos de condicionamento físico mais rápido do que imaginava. Os planos personalizados fazem toda a diferença!"</p>
+                    <strong>- Alexandre, Entusiasta do Fitness</strong>
+                </div>
+                <div class="testimonial-item">
+                    <p>"O professor é fantástico e realmente se importa com seu progresso. O aplicativo torna o acompanhamento dos treinos fácil e divertido."</p>
+                    <strong>- Samantha, Nova Usuária</strong>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer-modern">
+        <p>&copy; 2024 PersonalFit. Todos os direitos reservados.</p>
+    </footer>
+</body>
+</html>

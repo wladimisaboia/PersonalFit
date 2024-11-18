@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Planos de Treino - PersonalFit{% endblock %}
+
+{% block content %}
+<section class="section-modern">
+    <div class="dashboard-container">
+        <h2>Seus Planos de Treino</h2>
+        <div class="training-plans">
+            {% for plan in training_plans %}
+                <div class="plan-item">
+                    <h4>Plano criado em {{ plan.created_at }}</h4>
+                    <p>{{ plan.plan_details }}</p>
+                </div>
+            {% empty %}
+                <p>Nenhum plano de treino atribuído ainda.</p>
+            {% endfor %}
+        </div>
+        <!-- Botão Voltar -->
+        <a href="{% url 'student_dashboard' %}" class="btn">Voltar</a>
+    </div>
+</section>
+{% endblock %}

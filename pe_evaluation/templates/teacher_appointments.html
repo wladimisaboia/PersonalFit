@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Agendamentos - Dashboard do Professor{% endblock %}
+
+{% block content %}
+<section class="section-modern">
+    <div class="dashboard-container">
+        <h2>Agendamentos</h2>
+        <div class="appointments-list">
+            {% if appointments %}
+                <div class="appointment-cards">
+                    {% for appointment in appointments %}
+                        <div class="appointment-card">
+                            <h4>{{ appointment.student.user.username }}</h4>
+                            <p><strong>Data:</strong> {{ appointment.date }}</p>
+                            <p><strong>Hora:</strong> {{ appointment.time }}</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p>Nenhum agendamento registrado ainda.</p>
+            {% endif %}
+        </div>
+        <!-- Botão Voltar -->
+        <a href="{% url 'teacher_dashboard' %}" class="btn back-button">Voltar</a>
+    </div>
+</section>
+{% endblock %}

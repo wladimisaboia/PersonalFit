@@ -1,0 +1,32 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro - PersonalFit</title>
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+</head>
+<body>
+    <header class="header-modern">
+        <h1>PersonalFit</h1>
+    </header>
+
+    <main class="main-content">
+        <section class="form-container">
+            <h2>Cadastro</h2>
+            <form method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" class="btn btn-large">Cadastrar</button>
+            </form>
+            <p>Já tem uma conta? <a href="{% url 'login' %}">Entrar</a></p>
+        </section>
+    </main>
+
+    <footer class="footer-modern">
+        <p>&copy; 2024 PersonalFit. Todos os direitos reservados.</p>
+    </footer>
+</body>
+</html>
