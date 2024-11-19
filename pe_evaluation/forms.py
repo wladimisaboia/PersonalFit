@@ -5,18 +5,21 @@ from django.core.validators import MinValueValidator
 from .models import Student, TrainingPlan, Appointment
 
 class StudentRegistrationForm(UserCreationForm):
-    email = forms.EmailField(required=True)
+    email = forms.EmailField(required=True, label="E-mail")
     age = forms.IntegerField(
         required=False,
-        validators=[MinValueValidator(1, message="A idade deve ser maior que zero")]
+        validators=[MinValueValidator(1, message="A idade deve ser maior que zero")],
+        label="Idade"
     )
     height = forms.FloatField(
         required=False,
-        validators=[MinValueValidator(0.1, message="A altura deve ser maior que zero")]
+        validators=[MinValueValidator(0.1, message="A altura deve ser maior que zero")],
+        label="Altura (m)"
     )
     weight = forms.FloatField(
         required=False,
-        validators=[MinValueValidator(0.1, message="O peso deve ser maior que zero")]
+        validators=[MinValueValidator(0.1, message="O peso deve ser maior que zero")],
+        label="Peso (kg)"
     )
     goal = forms.ChoiceField(
         choices=[
@@ -34,11 +37,22 @@ class StudentRegistrationForm(UserCreationForm):
     class Meta:
         model = User
         fields = ['username', 'email', 'password1', 'password2', 'age', 'height', 'weight', 'goal']
+        labels = {
+            'username': 'Nome de usuário',
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['username'].help_text = None
+        self.fields['password1'].help_text = None
+        self.fields['password2'].help_text = None
+        self.fields['password1'].label = 'Senha'
+        self.fields['password2'].label = 'Confirmação de senha'
 
     def clean_email(self):
         email = self.cleaned_data.get('email')
         if User.objects.filter(email=email).exists():
-            raise forms.ValidationError("Este email já está em uso.")
+            raise forms.ValidationError("Este e-mail já está em uso.")
         return email
 
 class TrainingPlanForm(forms.ModelForm):
@@ -64,3 +78,7 @@ class AppointmentForm(forms.ModelForm):
             'date': 'Data',
             'time': 'Hora',
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['date'].input_formats = ['%d/%m/%Y']

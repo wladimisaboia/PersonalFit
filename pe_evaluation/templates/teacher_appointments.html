@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load l10n %}
 
 {% block title %}Agendamentos - Dashboard do Professor{% endblock %}
 
@@ -13,8 +14,8 @@
                     {% for appointment in appointments %}
                         <div class="appointment-card">
                             <h4>{{ appointment.student.user.username }}</h4>
-                            <p><strong>Data:</strong> {{ appointment.date }}</p>
-                            <p><strong>Hora:</strong> {{ appointment.time }}</p>
+                            <p><strong>Data:</strong> {{ appointment.date|date:"d/m/Y" }}</p>
+                            <p><strong>Hora:</strong> {{ appointment.time|time:"H:i" }}</p>
                         </div>
                     {% endfor %}
                 </div>
@@ -23,6 +24,7 @@
             {% endif %}
         </div>
         <!-- Botão Voltar -->
+        <br>
         <a href="{% url 'teacher_dashboard' %}" class="btn back-button">Voltar</a>
     </div>
 </section>

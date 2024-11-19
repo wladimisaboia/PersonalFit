@@ -44,7 +44,13 @@ class Appointment(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='appointments')
     date = models.DateField()
     time = models.TimeField()
-    created_at = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
-        return f"Agendamento de {self.student.user.username} em {self.date} às {self.time}"
+    def save(self, *args, **kwargs):
+        if self.date and self.time:
+            combined = timezone.make_aware(
+                datetime.combine(self.date, self.time),
+                timezone.get_current_timezone()
+            )
+            self.date = combined.date()
+            self.time = combined.time()
+        super().save(*args, **kwargs)
