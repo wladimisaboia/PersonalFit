@@ -6,14 +6,14 @@ from django.contrib import messages
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth.models import User
 from .models import Student, TrainingPlan, WeightHistory, Appointment
-from .forms import StudentRegistrationForm, TrainingPlanForm, AppointmentForm
+from .forms import StudentRegistrationForm, TrainingPlanForm, AppointmentForm, LoginForm
 
 def home(request):
     return render(request, 'home.html')
 
 def login_view(request):
     if request.method == 'POST':
-        form = AuthenticationForm(data=request.POST)
+        form = LoginForm(data=request.POST)
         if form.is_valid():
             user = form.get_user()
             login(request, user)
@@ -22,7 +22,7 @@ def login_view(request):
             else:
                 return redirect('student_dashboard')
     else:
-        form = AuthenticationForm()
+        form = LoginForm()
     return render(request, 'login.html', {'form': form})
 
 def register(request):

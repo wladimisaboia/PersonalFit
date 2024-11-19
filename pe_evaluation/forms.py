@@ -1,8 +1,12 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator
 from .models import Student, TrainingPlan, Appointment
+
+class LoginForm(AuthenticationForm):
+    username = forms.CharField(label="Usuário")
+    password = forms.CharField(label="Senha", widget=forms.PasswordInput())
 
 class StudentRegistrationForm(UserCreationForm):
     email = forms.EmailField(required=True, label="E-mail")
@@ -38,7 +42,7 @@ class StudentRegistrationForm(UserCreationForm):
         model = User
         fields = ['username', 'email', 'password1', 'password2', 'age', 'height', 'weight', 'goal']
         labels = {
-            'username': 'Nome de usuário',
+            'username': 'Usuário',
         }
 
     def __init__(self, *args, **kwargs):
