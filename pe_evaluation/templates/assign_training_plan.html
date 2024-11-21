@@ -1,18 +1,38 @@
 {% extends 'base.html' %}
-{% load static %}
 
-{% block title %}Atribuir Plano de Treino - PersonalFit{% endblock %}
+{% block title %}Atribuir Plano de Treino{% endblock %}
 
 {% block content %}
-<section class="section-modern">
-    <div class="form-container">
-        <h2>Atribuir Plano de Treino</h2>
-        <h3>Aluno: {{ student.user.username }}</h3>
-        <form method="post">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit" class="btn btn-large">Atribuir Plano</button>
-        </form>
-    </div>
-</section>
+<div class="container">
+    <h2>Atribuir Plano de Treino para {{ student.user.username }}</h2>
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="profile">Perfil:</label>
+            <select name="profile" id="profile" class="form-control" required>
+                {% for value, display in profiles %}
+                    <option value="{{ value }}">{{ display }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="level">Nível:</label>
+            <select name="level" id="level" class="form-control" required>
+                {% for value, display in levels %}
+                    <option value="{{ value }}">{{ display }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="goal">Objetivo:</label>
+            <select name="goal" id="goal" class="form-control" required>
+                {% for goal in goals %}
+                    <option value="{{ goal }}">{{ goal }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Atribuir Plano</button>
+    </form>
+    <a href="{% url 'teacher_dashboard' %}" class="btn btn-outline">Voltar</a>
+</div>
 {% endblock %}

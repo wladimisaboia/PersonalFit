@@ -66,3 +66,25 @@ class Availability(models.Model):
 
     def __str__(self):
         return f"{self.date} {self.time} - {'Reservado' if self.is_booked else 'Disponível'}"
+
+class PredefinedTraining(models.Model):
+    PROFILE_CHOICES = [
+        ('homem_adulto', 'Homem Adulto'),
+        ('homem_idoso', 'Homem Idoso'),
+        ('mulher_adulta', 'Mulher Adulta'),
+        ('mulher_idosa', 'Mulher Idosa'),
+    ]
+
+    LEVEL_CHOICES = [
+        ('iniciante', 'Iniciante'),
+        ('intermediario', 'Intermediário'),
+        ('avancado', 'Avançado'),
+    ]
+
+    profile = models.CharField(max_length=20, choices=PROFILE_CHOICES)
+    level = models.CharField(max_length=20, choices=LEVEL_CHOICES)
+    goal = models.CharField(max_length=50)  # Ex: Emagrecimento, Ganho de Massa Muscular, etc.
+    description = models.TextField()
+
+    def __str__(self):
+        return f"{self.get_profile_display()} - {self.get_level_display()} - {self.goal}"

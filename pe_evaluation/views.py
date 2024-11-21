@@ -5,7 +5,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib import messages
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth.models import User
-from .models import Student, TrainingPlan, WeightHistory, Availability, Appointment
+from .models import Student, TrainingPlan, WeightHistory, Availability, Appointment, PredefinedTraining
 from .forms import StudentRegistrationForm, TrainingPlanForm, LoginForm
 from django.utils import timezone
 
@@ -152,19 +152,27 @@ def teacher_appointments(request):
 def assign_training_plan(request, user_id):
     user = get_object_or_404(User, id=user_id)
     student, created = Student.objects.get_or_create(user=user)
-    
+
     if request.method == 'POST':
-        form = TrainingPlanForm(request.POST)
-        if form.is_valid():
-            plan = form.save(commit=False)
-            plan.student = student
-            plan.save()
-            messages.success(request, 'Plano de treino atribuído com sucesso!')
-            return redirect('teacher_dashboard')
-    else:
-        form = TrainingPlanForm()
-    
-    return render(request, 'assign_training_plan.html', {'form': form, 'student': student})
+        profile = request.POST.get('profile')
+        level = request.POST.get('level')
+        goal = request.POST.get('goal')
+
+        training = get_object_or_404(PredefinedTraining, profile=profile, level=level, goal=goal)
+        student.training_plans.create(plan_details=training.description)
+        messages.success(request, 'Plano de treino atribuído com sucesso!')
+        return redirect('teacher_dashboard')
+
+    profiles = PredefinedTraining.PROFILE_CHOICES
+    levels = PredefinedTraining.LEVEL_CHOICES
+    goals = PredefinedTraining.objects.values_list('goal', flat=True).distinct()
+
+    return render(request, 'assign_training_plan.html', {
+        'student': student,
+        'profiles': profiles,
+        'levels': levels,
+        'goals': goals,
+    })
 
 def logout_view(request):
     logout(request)
