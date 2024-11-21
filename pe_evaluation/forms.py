@@ -3,6 +3,7 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator
 from .models import Student, TrainingPlan, Appointment
+from django.utils import timezone
 
 class LoginForm(AuthenticationForm):
     username = forms.CharField(label="Usuário")
@@ -75,7 +76,7 @@ class AppointmentForm(forms.ModelForm):
         model = Appointment
         fields = ['date', 'time']
         widgets = {
-            'date': forms.DateInput(attrs={'type': 'date'}),
+            'date': forms.DateInput(attrs={'type': 'text', 'placeholder': 'DD/MM/YYYY'}),
             'time': forms.TimeInput(attrs={'type': 'time'}),
         }
         labels = {

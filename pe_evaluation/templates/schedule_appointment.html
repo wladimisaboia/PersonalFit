@@ -1,16 +1,26 @@
 {% extends 'base.html' %}
-{% load static %}
 
 {% block title %}Agendar Consulta - PersonalFit{% endblock %}
 
 {% block content %}
 <div class="container">
     <h2>Agendar Consulta</h2>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn">Agendar</button>
-    </form>
+    {% if available_slots %}
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="slot_id">Selecione uma data e hora:</label>
+                <select name="slot_id" id="slot_id" class="form-control" required>
+                    {% for slot in available_slots %}
+                        <option value="{{ slot.id }}">{{ slot.date|date:"d/m/Y" }} - {{ slot.time|time:"H:i" }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn">Agendar</button>
+        </form>
+    {% else %}
+        <p>Não há datas disponíveis.</p>
+    {% endif %}
     <br>
     <a href="{% url 'student_dashboard' %}" class="btn-outline">Voltar</a>
 </div>

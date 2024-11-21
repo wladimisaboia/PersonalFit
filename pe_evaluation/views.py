@@ -5,8 +5,9 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib import messages
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth.models import User
-from .models import Student, TrainingPlan, WeightHistory, Appointment
-from .forms import StudentRegistrationForm, TrainingPlanForm, AppointmentForm, LoginForm
+from .models import Student, TrainingPlan, WeightHistory, Availability, Appointment
+from .forms import StudentRegistrationForm, TrainingPlanForm, LoginForm
+from django.utils import timezone
 
 def home(request):
     return render(request, 'home.html')
@@ -44,7 +45,6 @@ def register(request):
     else:
         form = StudentRegistrationForm()
     return render(request, 'register.html', {'form': form})
-
 
 @login_required
 def student_dashboard(request):
@@ -173,14 +173,67 @@ def logout_view(request):
 
 @login_required
 def schedule_appointment(request):
-    student = request.user.student
+    available_slots = Availability.objects.filter(is_booked=False).order_by('date', 'time')
     if request.method == 'POST':
-        form = AppointmentForm(request.POST)
-        if form.is_valid():
-            appointment = form.save(commit=False)
-            appointment.student = student
-            appointment.save()
-            return redirect('student_dashboard')
-    else:
-        form = AppointmentForm()
-    return render(request, 'schedule_appointment.html', {'form': form})
+        slot_id = request.POST.get('slot_id')
+        slot = get_object_or_404(Availability, id=slot_id, is_booked=False)
+        slot.is_booked = True
+        slot.save()
+        Appointment.objects.create(student=request.user.student, date=slot.date, time=slot.time)
+        messages.success(request, 'Consulta agendada com sucesso!')
+        return redirect('student_dashboard')
+    return render(request, 'schedule_appointment.html', {'available_slots': available_slots})
+
+@login_required
+@user_passes_test(is_teacher)
+def delete_training_plan(request, plan_id):
+    plan = get_object_or_404(TrainingPlan, id=plan_id)
+    if request.method == 'POST':
+        plan.delete()
+        messages.success(request, 'Plano de treino excluído com sucesso!')
+        return redirect('teacher_dashboard')
+    return render(request, 'confirm_delete_training.html', {'plan': plan, 'type': 'treino'})
+
+@login_required
+def delete_appointment(request, appointment_id):
+    appointment = get_object_or_404(Appointment, id=appointment_id, student=request.user.student)
+    if request.method == 'POST':
+        appointment.delete()
+        messages.success(request, 'Agendamento excluído com sucesso!')
+        return redirect('student_dashboard')
+    return render(request, 'confirm_delete_appointment.html', {'object': appointment, 'type': 'agendamento'})
+
+@login_required
+def delete_account(request):
+    user = request.user
+    if request.method == 'POST':
+        user.delete()
+        messages.success(request, 'Sua conta foi excluída com sucesso!')
+        return redirect('home')
+    return render(request, 'confirm_delete_account.html', {'object': user, 'type': 'conta'})
+
+@login_required
+@user_passes_test(is_teacher)
+def define_availability(request):
+    if request.method == 'POST':
+        date = request.POST.get('date')
+        time = request.POST.get('time')
+        Availability.objects.create(teacher=request.user, date=date, time=time)
+        messages.success(request, 'Disponibilidade adicionada com sucesso!')
+        return redirect('define_availability')
+    
+    availabilities = Availability.objects.filter(teacher=request.user).order_by('date', 'time')
+    return render(request, 'define_availability.html', {'availabilities': availabilities})
+
+@login_required
+@user_passes_test(is_teacher)
+def delete_availability(request, availability_id):
+    availability = get_object_or_404(Availability, id=availability_id, teacher=request.user)
+    if request.method == 'POST':
+        # Se houver um agendamento associado, remova-o
+        if availability.is_booked:
+            Appointment.objects.filter(date=availability.date, time=availability.time).delete()
+        availability.delete()
+        messages.success(request, 'Disponibilidade cancelada com sucesso!')
+        return redirect('define_availability')
+    return render(request, 'confirm_delete_availability.html', {'availability': availability})

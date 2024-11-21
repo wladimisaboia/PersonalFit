@@ -13,5 +13,11 @@ urlpatterns = [
     path('teacher-dashboard/students/', views.teacher_students, name='teacher_students'),
     path('teacher-dashboard/appointments/', views.teacher_appointments, name='teacher_appointments'),
     path('teacher-dashboard/assign-training-plan/<int:user_id>/', views.assign_training_plan, name='assign_training_plan'),
+    path('teacher-dashboard/delete-training-plan/<int:plan_id>/', views.delete_training_plan, name='delete_training_plan'),
+    path('student-dashboard/delete-appointment/<int:appointment_id>/', views.delete_appointment, name='delete_appointment'),
+    path('teacher-dashboard/define-availability/', views.define_availability, name='define_availability'),
+path('student-dashboard/schedule-appointment/', views.schedule_appointment, name='schedule_appointment'),
+    path('student-dashboard/delete-account/', views.delete_account, name='delete_account'),
+    path('teacher-dashboard/delete-availability/<int:availability_id>/', views.delete_availability, name='delete_availability'),
     path('logout/', views.logout_view, name='logout'),
 ]

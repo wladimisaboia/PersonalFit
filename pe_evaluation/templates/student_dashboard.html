@@ -15,6 +15,7 @@
         <a href="{% url 'student_update' %}" class="btn">Atualizar Informações</a>
         <a href="{% url 'student_training_plans' %}" class="btn-outline">Planos de Treino</a>
         <a href="{% url 'schedule_appointment' %}" class="btn-outline">Agendamento</a>
+        <a href="{% url 'delete_account' %}" class="btn btn-danger">Excluir Conta</a>
     </div>
 
     <!-- Contêiner do Dashboard -->
@@ -39,6 +40,20 @@
                 <div class="metric-title">Objetivo</div>
                 <div class="metric-value">{{ student.goal }}</div>
             </div>
+        </div>
+
+        <!-- Agendamentos -->
+        <h3>Seus Agendamentos</h3>
+        <div class="appointments-list">
+            {% for appointment in student.appointments.all %}
+                <div class="appointment-item">
+                    <p><strong>Data:</strong> {{ appointment.date|date:"d/m/Y" }}</p>
+                    <p><strong>Hora:</strong> {{ appointment.time|time:"H:i" }}</p>
+                    <a href="{% url 'delete_appointment' appointment.id %}" class="btn btn-small btn-danger">Excluir Agendamento</a>
+                </div>
+            {% empty %}
+                <p>Você não tem agendamentos.</p>
+            {% endfor %}
         </div>
     </div>
 </div>

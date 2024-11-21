@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}Definir Disponibilidade - PersonalFit{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Definir Disponibilidade</h2>
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="id_date">Data:</label>
+            <input type="date" name="date" id="id_date" class="form-control" required>
+        </div>
+        <div class="form-group">
+            <label for="id_time">Hora:</label>
+            <input type="time" name="time" id="id_time" class="form-control" required>
+        </div>
+        <button type="submit" class="btn">Adicionar Disponibilidade</button>
+    </form>
+    <br>
+    <h3>Suas Disponibilidades</h3>
+    <div class="availability-list">
+        {% if availabilities %}
+            <ul>
+                {% for availability in availabilities %}
+                    <li>
+                        {{ availability.date|date:"d/m/Y" }} - {{ availability.time|time:"H:i" }} - 
+                        {% if availability.is_booked %}
+                            Reservado
+                        {% else %}
+                            Disponível
+                        {% endif %}
+                        <form method="post" action="{% url 'delete_availability' availability.id %}" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-small btn-danger">Cancelar</button>
+                        </form>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>Você ainda não definiu nenhuma disponibilidade.</p>
+        {% endif %}
+    </div>
+    <br>
+    <a href="{% url 'teacher_dashboard' %}" class="btn-outline">Voltar</a>
+</div>
+{% endblock %}

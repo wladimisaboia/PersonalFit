@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block title %}Confirmar Exclusão de Agendamento{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Confirmar Exclusão de Agendamento</h2>
+    <p>Tem certeza de que deseja excluir este agendamento?</p>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Excluir</button>
+        <a href="{% url 'student_dashboard' %}" class="btn btn-outline">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

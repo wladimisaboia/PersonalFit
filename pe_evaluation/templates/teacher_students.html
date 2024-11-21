@@ -17,7 +17,12 @@
                             <p><strong>Altura:</strong> {% if student.student %}{{ student.student.height }} m{% else %}N/A{% endif %}</p>
                             <p><strong>Peso:</strong> {% if student.student %}{{ student.student.weight }} kg{% else %}N/A{% endif %}</p>
                             <p><strong>Objetivo:</strong> {% if student.student %}{{ student.student.goal }}{% else %}N/A{% endif %}</p>
-                            <a href="{% url 'assign_training_plan' student.id %}" class="btn btn-small">Atribuir Treino</a>
+                            <div class="button-group">
+                                <a href="{% url 'assign_training_plan' student.id %}" class="btn btn-small">Atribuir Treino</a>
+                                {% if student.student.training_plans.exists %}
+                                    <a href="{% url 'delete_training_plan' student.student.training_plans.first.id %}" class="btn btn-small btn-danger">Excluir Treino</a>
+                                {% endif %}
+                            </div>
                         </div>
                     {% endfor %}
                 </div>
