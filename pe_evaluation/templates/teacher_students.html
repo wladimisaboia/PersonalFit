@@ -19,6 +19,7 @@
                             <p><strong>Objetivo:</strong> {% if student.student %}{{ student.student.goal }}{% else %}N/A{% endif %}</p>
                             <div class="button-group">
                                 <a href="{% url 'assign_training_plan' student.id %}" class="btn btn-small">Atribuir Treino</a>
+                                <a href="{% url 'teacher_training_progress' student.id %}" class="btn btn-small btn-info">Acompanhar Treino</a>
                                 {% if student.student.training_plans.exists %}
                                     <a href="{% url 'delete_training_plan' student.student.training_plans.first.id %}" class="btn btn-small btn-danger">Excluir Treino</a>
                                 {% endif %}
@@ -35,4 +36,44 @@
         <a href="{% url 'teacher_dashboard' %}" class="btn back-button">Voltar</a>
     </div>
 </section>
+
+<style>
+.student-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.student-card {
+    background-color: #fff;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.student-card h4 {
+    margin-bottom: 1rem;
+}
+
+.student-card p {
+    margin: 0.5rem 0;
+}
+
+.student-card .btn {
+    margin-top: 1rem;
+    display: inline-block;
+    align-self: flex-start;
+}
+
+.button-group {
+    display: flex;
+    gap: 0.5rem;
+}
+</style>
 {% endblock %}

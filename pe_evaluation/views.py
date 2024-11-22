@@ -5,7 +5,16 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib import messages
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth.models import User
-from .models import Student, TrainingPlan, WeightHistory, Availability, Appointment, PredefinedTraining
+from django.http import JsonResponse
+from .models import (
+    Student, 
+    TrainingPlan, 
+    WeightHistory, 
+    Availability, 
+    Appointment, 
+    PredefinedTraining,
+    ExerciseStatus
+)
 from .forms import StudentRegistrationForm, TrainingPlanForm, LoginForm
 from django.utils import timezone
 
@@ -91,7 +100,35 @@ def student_dashboard(request):
 def student_training_plans(request):
     student = request.user.student
     training_plans = TrainingPlan.objects.filter(student=student)
+    
+    for plan in training_plans:
+        exercises = [ex.strip() for ex in plan.plan_details.split(',') if ex.strip()]
+        
+        for exercise in exercises:
+            ExerciseStatus.objects.get_or_create(
+                training_plan=plan,
+                exercise_description=exercise,
+                defaults={'status': 'pending'}
+            )
+    
     return render(request, 'student_training_plans.html', {'training_plans': training_plans})
+
+# Adicione esta nova view
+@login_required
+def update_exercise_status(request):
+    if request.method == 'POST':
+        exercise_id = request.POST.get('exercise_id')
+        new_status = request.POST.get('status')
+        
+        try:
+            exercise = ExerciseStatus.objects.get(id=exercise_id)
+            if exercise.training_plan.student == request.user.student:
+                exercise.status = new_status
+                exercise.save()
+                return JsonResponse({'status': 'success'})
+        except ExerciseStatus.DoesNotExist:
+            pass
+    return JsonResponse({'status': 'error'})
 
 @login_required
 def student_update(request):
@@ -103,10 +140,8 @@ def student_update(request):
         height = request.POST.get('height')
         goal = request.POST.get('goal')
 
-        # Salvar o novo peso no histórico
         WeightHistory.objects.create(student=student, weight=new_weight)
 
-        # Atualizar as informações do aluno
         student.age = age
         student.height = height
         student.weight = new_weight
@@ -238,10 +273,26 @@ def define_availability(request):
 def delete_availability(request, availability_id):
     availability = get_object_or_404(Availability, id=availability_id, teacher=request.user)
     if request.method == 'POST':
-        # Se houver um agendamento associado, remova-o
         if availability.is_booked:
             Appointment.objects.filter(date=availability.date, time=availability.time).delete()
         availability.delete()
         messages.success(request, 'Disponibilidade cancelada com sucesso!')
         return redirect('define_availability')
     return render(request, 'confirm_delete_availability.html', {'availability': availability})
+
+
+@login_required
+@user_passes_test(is_teacher)
+def teacher_training_progress(request, student_id):
+    student = get_object_or_404(User, id=student_id)
+    training_plans = TrainingPlan.objects.filter(student=student.student).order_by('-created_at')
+
+    for plan in training_plans:
+        total_exercises = plan.exercise_statuses.count()
+        completed_exercises = plan.exercise_statuses.filter(status='completed').count()
+        plan.completion_percentage = int((completed_exercises / total_exercises * 100) if total_exercises > 0 else 0)
+
+    return render(request, 'teacher_training_progress.html', {
+        'student': student,
+        'training_plans': training_plans
+    })

@@ -7,18 +7,143 @@
 <section class="section-modern">
     <div class="dashboard-container">
         <h2>Seus Planos de Treino</h2>
+        
+        <div class="progress-chart-container">
+            <canvas id="trainingProgress"></canvas>
+        </div>
+
         <div class="training-plans">
             {% for plan in training_plans %}
                 <div class="plan-item">
                     <h4>Plano criado em {{ plan.created_at }}</h4>
-                    <p>{{ plan.plan_details }}</p>
+                    {% for exercise_status in plan.exercise_statuses.all %}
+                        <div class="exercise-item">
+                            <p>{{ exercise_status.exercise_description }}</p>
+                            <div class="exercise-controls">
+                                <select class="status-select" data-exercise-id="{{ exercise_status.id }}">
+                                    <option value="pending" {% if exercise_status.status == 'pending' %}selected{% endif %}>Pendente</option>
+                                    <option value="completed" {% if exercise_status.status == 'completed' %}selected{% endif %}>Concluído</option>
+                                </select>
+                                <button class="btn btn-save" onclick="saveExerciseStatus({{ exercise_status.id }})">Salvar</button>
+                            </div>
+                        </div>
+                    {% endfor %}
                 </div>
             {% empty %}
                 <p>Nenhum plano de treino atribuído ainda.</p>
             {% endfor %}
         </div>
-        <!-- Botão Voltar -->
         <a href="{% url 'student_dashboard' %}" class="btn">Voltar</a>
     </div>
 </section>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+    .exercise-item {
+        border: 1px solid #ddd;
+        padding: 15px;
+        margin-bottom: 10px;
+        border-radius: 5px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .exercise-controls {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+    
+    .status-select {
+        padding: 5px;
+        border-radius: 4px;
+        border: 1px solid #ddd;
+    }
+    
+    .btn-save {
+        background-color: #4CAF50;
+        color: white;
+        padding: 5px 15px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+    
+    .btn-save:hover {
+        background-color: #45a049;
+    }
+
+    .progress-chart-container {
+        width: 200px;
+        margin: 20px auto;
+    }
+</style>
+
+<script>
+function createProgressChart() {
+    const exercises = document.querySelectorAll('.status-select');
+    let completed = 0;
+    let pending = 0;
+
+    exercises.forEach(select => {
+        if (select.value === 'completed') {
+            completed++;
+        } else {
+            pending++;
+        }
+    });
+
+    const ctx = document.getElementById('trainingProgress').getContext('2d');
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Concluídos', 'Pendentes'],
+            datasets: [{
+                data: [completed, pending],
+                backgroundColor: ['#4CAF50', '#ddd'],
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+}
+
+function saveExerciseStatus(exerciseId) {
+    const select = document.querySelector(`select[data-exercise-id="${exerciseId}"]`);
+    const status = select.value;
+    
+    fetch('{% url "update_exercise_status" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: `exercise_id=${exerciseId}&status=${status}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            const chartInstance = Chart.getChart('trainingProgress');
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+            createProgressChart();
+            alert('Treino realizado com sucesso!');
+        } else {
+            alert('Erro ao atualizar status.');
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', createProgressChart);
+</script>
 {% endblock %}

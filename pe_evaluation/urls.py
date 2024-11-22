@@ -19,5 +19,7 @@ urlpatterns = [
 path('student-dashboard/schedule-appointment/', views.schedule_appointment, name='schedule_appointment'),
     path('student-dashboard/delete-account/', views.delete_account, name='delete_account'),
     path('teacher-dashboard/delete-availability/<int:availability_id>/', views.delete_availability, name='delete_availability'),
+    path('update-exercise-status/', views.update_exercise_status, name='update_exercise_status'),
+    path('teacher-progress/<int:student_id>/', views.teacher_training_progress, name='teacher_training_progress'),
     path('logout/', views.logout_view, name='logout'),
 ]

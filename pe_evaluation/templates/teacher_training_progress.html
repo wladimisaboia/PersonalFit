@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Progresso do Aluno - PersonalFit{% endblock %}
+
+{% block content %}
+<section class="section-modern">
+    <div class="dashboard-container">
+        <h2>Progresso de Treino - {{ student.username }}</h2>
+        
+        <div class="student-info">
+            <p><strong>Idade:</strong> {{ student.student.age }}</p>
+            <p><strong>Objetivo:</strong> {{ student.student.goal }}</p>
+        </div>
+
+        <div class="training-progress">
+            {% for plan in training_plans %}
+                <div class="plan-card">
+                    <h3>Plano de {{ plan.created_at|date:"d/m/Y" }}</h3>
+                    
+                    <div class="progress-summary">
+                        <div class="progress-bar">
+                            <div class="progress" style="width: {{ plan.completion_percentage }}%"></div>
+                        </div>
+                        <span>{{ plan.completion_percentage }}% concluído</span>
+                    </div>
+
+                    <div class="exercises-list">
+                        {% for exercise in plan.exercise_statuses.all %}
+                            <div class="exercise-item {% if exercise.status == 'completed' %}completed{% endif %}">
+                                <span class="exercise-name">{{ exercise.exercise_description }}</span>
+                                <span class="exercise-status">{{ exercise.get_status_display }}</span>
+                                <span class="exercise-date">
+                                    {% if exercise.status == 'completed' %}
+                                        Concluído em: {{ exercise.updated_at|date:"d/m/Y" }}
+                                    {% endif %}
+                                </span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% empty %}
+                <p>Nenhum plano de treino atribuído ainda.</p>
+            {% endfor %}
+        </div>
+
+        <a href="{% url 'teacher_students' %}" class="btn back-button">Voltar</a>
+    </div>
+</section>
+
+<style>
+.plan-card {
+    background: #fff;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.progress-summary {
+    margin: 15px 0;
+}
+
+.progress-bar {
+    background: #eee;
+    height: 20px;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress {
+    background: #4CAF50;
+    height: 100%;
+    transition: width 0.3s ease;
+}
+
+.exercises-list {
+    margin-top: 15px;
+}
+
+.exercise-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.exercise-item.completed {
+    background-color: #f0f9f0;
+}
+
+.exercise-status {
+    color: #666;
+}
+</style>
+{% endblock %}

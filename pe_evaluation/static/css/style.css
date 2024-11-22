@@ -14,7 +14,7 @@ body {
 .header-modern {
     background-color: transparent;
     padding: 1rem 2rem;
-    position: relative; /* Alterado de fixed para relative */
+    position: relative;
     width: 100%;
     box-sizing: border-box;
     z-index: 100;
@@ -152,7 +152,7 @@ nav ul li a.btn-primary:hover {
     margin-top: auto;
 }
 
-/* landing.css - Exclusivo para a landing page */
+/* landing.css */
 .hero-modern {
     background-color: #f5f7fa;
     display: flex;
@@ -347,7 +347,7 @@ nav ul li a.btn-primary:hover {
 
 .availability-list form {
     display: inline;
-    margin-left: 10px; /* Ajuste o valor conforme necessário */
+    margin-left: 10px;
 }
 
 .btn-small {

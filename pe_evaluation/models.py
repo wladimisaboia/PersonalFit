@@ -83,8 +83,17 @@ class PredefinedTraining(models.Model):
 
     profile = models.CharField(max_length=20, choices=PROFILE_CHOICES)
     level = models.CharField(max_length=20, choices=LEVEL_CHOICES)
-    goal = models.CharField(max_length=50)  # Ex: Emagrecimento, Ganho de Massa Muscular, etc.
+    goal = models.CharField(max_length=50)
     description = models.TextField()
 
     def __str__(self):
         return f"{self.get_profile_display()} - {self.get_level_display()} - {self.goal}"
+
+class ExerciseStatus(models.Model):
+    training_plan = models.ForeignKey(TrainingPlan, on_delete=models.CASCADE, related_name='exercise_statuses')
+    exercise_description = models.TextField()
+    status = models.CharField(max_length=10, choices=[('pending', 'Pendente'), ('completed', 'Concluído')], default='pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.exercise_description} - {self.status}"
