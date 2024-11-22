@@ -4,7 +4,7 @@ body {
     font-family: 'Roboto', sans-serif;
     color: #333;
     line-height: 1.6;
-    background-color: #f5f7fa;  /* Mantendo o fundo cinza claro em todo o site */
+    background-color: #f5f7fa;
 }
 
 /* Header and Navigation */
@@ -215,12 +215,12 @@ nav ul li a.btn-primary:hover {
     max-width: 1200px;
     margin: 0 auto;
     gap: 2rem;
-    background-color: #f5f7fa;  /* Mesmo tom de cinza do hero */
+    background-color: #f5f7fa;
 }
 
 /* About Section */
 #about {
-    background-color: #f5f7fa;  /* Alterado de branco para cinza */
+    background-color: #f5f7fa;
 }
 
 .about-content {
@@ -276,13 +276,13 @@ nav ul li a.btn-primary:hover {
 
 .benefits-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr); /* Garante duas colunas */
-    gap: 2rem; /* Espaçamento entre os grids */
-    width: 100%; /* Ocupa toda a largura disponível */
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+    width: 100%;
 }
 
 .benefit-item {
-    background-color: #ffffff;  /* Mantendo apenas os cards com fundo branco para contraste */
+    background-color: #ffffff;
     padding: 2rem;
     border-radius: 15px;
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
@@ -299,21 +299,21 @@ nav ul li a.btn-primary:hover {
 }
 
 .benefit-item img {
-    width: 100px; /* Define uma largura fixa ideal */
-    height: auto; /* Mantém a proporção da imagem */
-    object-fit: contain; /* Garante que a imagem fique dentro do espaço sem distorção */
-    margin: 0 auto; /* Centraliza a imagem dentro do grid */
+    width: 100px; 
+    height: auto;
+    object-fit: contain;
+    margin: 0 auto;
 }
 
 .benefit-item {
     background-color: #ffffff;
-    text-align: center; /* Centraliza todo o conteúdo */
-    flex-direction: column; /* Organiza imagem, título e texto na vertical */
-    gap: 1rem; /* Reduz espaço entre os elementos */
+    text-align: center;
+    flex-direction: column;
+    gap: 1rem;
 }
 
 .benefit-item-content {
-    flex: 1;  /* Permite que o conteúdo ocupe o espaço restante */
+    flex: 1;
 }
 
 .benefit-item h3 {
@@ -352,7 +352,7 @@ nav ul li a.btn-primary:hover {
 }
 
 .testimonial-item {
-    background-color: #ffffff;  /* Mantendo apenas os cards com fundo branco para contraste */
+    background-color: #ffffff;
     padding: 2rem;
     border-radius: 15px;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
