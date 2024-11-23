@@ -17,6 +17,8 @@ from .models import (
 )
 from .forms import StudentRegistrationForm, TrainingPlanForm, LoginForm
 from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
 
 def home(request):
     return render(request, 'home.html')
@@ -113,22 +115,67 @@ def student_training_plans(request):
     
     return render(request, 'student_training_plans.html', {'training_plans': training_plans})
 
-# Adicione esta nova view
 @login_required
 def update_exercise_status(request):
     if request.method == 'POST':
         exercise_id = request.POST.get('exercise_id')
         new_status = request.POST.get('status')
-        
+
+        if not exercise_id or not new_status:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Dados inválidos fornecidos.'
+            }, status=400)
+
+        valid_statuses = ['pending', 'completed']
+        if new_status not in valid_statuses:
+            return JsonResponse({
+                'status': 'error',
+                'message': f'Status "{new_status}" não é válido.'
+            }, status=400)
+
         try:
-            exercise = ExerciseStatus.objects.get(id=exercise_id)
-            if exercise.training_plan.student == request.user.student:
-                exercise.status = new_status
-                exercise.save()
-                return JsonResponse({'status': 'success'})
+            exercise = ExerciseStatus.objects.select_related('training_plan__student').get(id=exercise_id)
+            
+            if exercise.training_plan.student != request.user.student:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'Acesso não autorizado.'
+                }, status=403)
+
+            exercise.status = new_status
+            exercise.save()
+
+            total_exercises = exercise.training_plan.exercise_statuses.count()
+            completed_exercises = exercise.training_plan.exercise_statuses.filter(status='completed').count()
+            
+            return JsonResponse({
+                'status': 'success',
+                'message': 'Status atualizado com sucesso!',
+                'statistics': {
+                    'total': total_exercises,
+                    'completed': completed_exercises,
+                    'pending': total_exercises - completed_exercises
+                }
+            })
+
         except ExerciseStatus.DoesNotExist:
-            pass
-    return JsonResponse({'status': 'error'})
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Exercício não encontrado.'
+            }, status=404)
+
+        except Exception as e:
+            return JsonResponse({
+                'status': 'error',
+                'message': f'Erro inesperado: {str(e)}'
+            }, status=500)
+
+    return JsonResponse({
+        'status': 'error',
+        'message': 'Método inválido. Apenas POST é permitido.'
+    }, status=405)
+
 
 @login_required
 def student_update(request):
