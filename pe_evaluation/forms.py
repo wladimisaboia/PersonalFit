@@ -31,9 +31,6 @@ class StudentRegistrationForm(UserCreationForm):
             ('Condicionamento Físico', 'Condicionamento Físico'),
             ('Emagrecimento', 'Emagrecimento'),
             ('Ganho de Massa Muscular', 'Ganho de Massa Muscular'),
-            ('Melhora da Postura', 'Melhora da Postura'),
-            ('Preparação para Testes Físicos', 'Preparação para Testes Físicos'),
-            ('Melhoria da Resistência Cardiovascular', 'Melhoria da Resistência Cardiovascular'),
         ],
         required=True,
         label="Objetivo"

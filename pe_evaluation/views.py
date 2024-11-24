@@ -43,13 +43,19 @@ def register(request):
         if form.is_valid():
             user = form.save()
             
-            Student.objects.create(
+            student = Student.objects.create(
                 user=user,
                 age=form.cleaned_data.get('age'),
                 height=form.cleaned_data.get('height'),
                 weight=form.cleaned_data.get('weight'),
                 goal=form.cleaned_data.get('goal')
             )
+            
+            if form.cleaned_data.get('weight'):
+                WeightHistory.objects.create(
+                    student=student,
+                    weight=form.cleaned_data.get('weight')
+                )
             
             login(request, user)
             return redirect('student_dashboard')
@@ -63,14 +69,17 @@ def student_dashboard(request):
     weight_history = student.weight_history.order_by('date_recorded')
 
     # Calcular a evolução do peso
+    current_weight = student.weight  # Usar o peso atual do estudante
+    
     if weight_history.exists():
         initial_weight = weight_history.first().weight
-        current_weight = weight_history.last().weight
         weight_change = current_weight - initial_weight
         percentage_change = (weight_change / initial_weight) * 100
         weight_trend = f"{'↑' if weight_change > 0 else '↓'} {abs(weight_change):.1f} kg desde o início"
     else:
-        initial_weight = current_weight = percentage_change = weight_trend = None
+        initial_weight = current_weight
+        percentage_change = 0  # 0% de mudança inicial
+        weight_trend = "Peso inicial"
 
     # Calcular o IMC
     height = student.height
@@ -85,7 +94,8 @@ def student_dashboard(request):
         else:
             bmi_category = "Obesidade"
     else:
-        bmi = bmi_category = None
+        bmi = None
+        bmi_category = "Dados insuficientes"
 
     context = {
         'student': student,
