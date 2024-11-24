@@ -1,7 +1,5 @@
 {% extends 'base.html' %}
-
 {% block title %}Definir Disponibilidade - PersonalFit{% endblock %}
-
 {% block content %}
 <div class="container">
     <h2>Definir Disponibilidade</h2>
@@ -9,11 +7,20 @@
         {% csrf_token %}
         <div class="form-group">
             <label for="id_date">Data:</label>
-            <input type="date" name="date" id="id_date" class="form-control" required>
+            <input type="date" 
+                   name="date" 
+                   id="id_date" 
+                   class="form-control" 
+                   required 
+                   min="{{ now|date:'Y-m-d' }}">
         </div>
         <div class="form-group">
             <label for="id_time">Hora:</label>
-            <input type="time" name="time" id="id_time" class="form-control" required>
+            <input type="time" 
+                   name="time" 
+                   id="id_time" 
+                   class="form-control" 
+                   required>
         </div>
         <button type="submit" class="btn">Adicionar Disponibilidade</button>
     </form>

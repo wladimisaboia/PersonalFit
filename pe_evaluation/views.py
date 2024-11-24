@@ -19,6 +19,7 @@ from .forms import StudentRegistrationForm, TrainingPlanForm, LoginForm
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
+from datetime import datetime
 
 def home(request):
     return render(request, 'home.html')
@@ -68,8 +69,7 @@ def student_dashboard(request):
     student = request.user.student
     weight_history = student.weight_history.order_by('date_recorded')
 
-    # Calcular a evolução do peso
-    current_weight = student.weight  # Usar o peso atual do estudante
+    current_weight = student.weight
     
     if weight_history.exists():
         initial_weight = weight_history.first().weight
@@ -81,7 +81,6 @@ def student_dashboard(request):
         percentage_change = 0  # 0% de mudança inicial
         weight_trend = "Peso inicial"
 
-    # Calcular o IMC
     height = student.height
     if height and current_weight:
         bmi = current_weight / (height ** 2)
@@ -191,7 +190,6 @@ def update_exercise_status(request):
 def student_update(request):
     student = request.user.student
     if request.method == 'POST':
-        # Capturar os dados do formulário
         new_weight = float(request.POST.get('new_weight'))
         age = request.POST.get('age')
         height = request.POST.get('height')
@@ -205,7 +203,6 @@ def student_update(request):
         student.goal = goal
         student.save()
 
-        # Calcular o desempenho de peso
         weight_history = student.weight_history.order_by('date_recorded')
         if weight_history.exists():
             initial_weight = weight_history.first().weight
@@ -273,16 +270,102 @@ def logout_view(request):
 
 @login_required
 def schedule_appointment(request):
-    available_slots = Availability.objects.filter(is_booked=False).order_by('date', 'time')
+    current_datetime = timezone.now()
+    
+    available_slots = Availability.objects.filter(
+        is_booked=False,
+        date__gte=current_datetime.date()
+    ).order_by('date', 'time')
+    
+    if available_slots.filter(date=current_datetime.date()).exists():
+        available_slots = available_slots.exclude(
+            date=current_datetime.date(),
+            time__lte=current_datetime.time()
+        )
+
     if request.method == 'POST':
         slot_id = request.POST.get('slot_id')
-        slot = get_object_or_404(Availability, id=slot_id, is_booked=False)
-        slot.is_booked = True
-        slot.save()
-        Appointment.objects.create(student=request.user.student, date=slot.date, time=slot.time)
-        messages.success(request, 'Consulta agendada com sucesso!')
+        try:
+            slot = Availability.objects.get(id=slot_id, is_booked=False)
+            
+            slot_datetime = timezone.make_aware(
+                datetime.combine(slot.date, slot.time),
+                timezone.get_current_timezone()
+            )
+            
+            if slot_datetime <= timezone.now():
+                messages.error(request, 'Este horário não está mais disponível. Por favor, escolha outro horário.')
+                return redirect('schedule_appointment')
+            
+            if Appointment.objects.filter(
+                student=request.user.student,
+                date=slot.date,
+                time=slot.time
+            ).exists():
+                messages.error(request, 'Você já possui uma consulta agendada para este horário.')
+                return redirect('schedule_appointment')
+            
+            slot.is_booked = True
+            slot.save()
+            
+            Appointment.objects.create(
+                student=request.user.student,
+                date=slot.date,
+                time=slot.time
+            )
+            
+            messages.success(request, f'Consulta agendada com sucesso para {slot.date|date:"d/m/Y"} às {slot.time|time:"H:i"}!')
+            return redirect('student_dashboard')
+            
+        except Availability.DoesNotExist:
+            messages.error(request, 'O horário selecionado não está mais disponível. Por favor, escolha outro horário.')
+            return redirect('schedule_appointment')
+        except Exception as e:
+            messages.error(request, 'Ocorreu um erro ao agendar a consulta. Por favor, tente novamente.')
+            return redirect('schedule_appointment')
+    
+    return render(request, 'schedule_appointment.html', {
+        'available_slots': available_slots
+    })
+
+@login_required
+def cancel_appointment(request, appointment_id):
+    try:
+        appointment = Appointment.objects.get(
+            id=appointment_id,
+            student=request.user.student
+        )
+        
+        availability = Availability.objects.get(
+            date=appointment.date,
+            time=appointment.time,
+            is_booked=True
+        )
+        
+        availability.is_booked = False
+        availability.save()
+        
+        # Remove o agendamento
+        appointment.delete()
+        
+        messages.success(request, 'Agendamento cancelado com sucesso.')
         return redirect('student_dashboard')
-    return render(request, 'schedule_appointment.html', {'available_slots': available_slots})
+        
+    except Appointment.DoesNotExist:
+        messages.error(request, 'Agendamento não encontrado.')
+        return redirect('student_dashboard')
+    except Availability.DoesNotExist:
+        Availability.objects.create(
+            date=appointment.date,
+            time=appointment.time,
+            is_booked=False
+        )
+        appointment.delete()
+        messages.success(request, 'Agendamento cancelado com sucesso.')
+        return redirect('student_dashboard')
+    except Exception as e:
+        messages.error(request, 'Ocorreu um erro ao cancelar o agendamento.')
+        return redirect('student_dashboard')
 
 @login_required
 @user_passes_test(is_teacher)
@@ -318,12 +401,56 @@ def define_availability(request):
     if request.method == 'POST':
         date = request.POST.get('date')
         time = request.POST.get('time')
-        Availability.objects.create(teacher=request.user, date=date, time=time)
-        messages.success(request, 'Disponibilidade adicionada com sucesso!')
+        
+        try:
+            date_obj = datetime.strptime(date, '%Y-%m-%d').date()
+            time_obj = datetime.strptime(time, '%H:%M').time()
+            
+            slot_datetime = timezone.make_aware(
+                datetime.combine(date_obj, time_obj),
+                timezone.get_current_timezone()
+            )
+            
+            if slot_datetime <= timezone.now():
+                messages.error(request, 'Não é possível adicionar disponibilidade para uma data/hora que já passou.')
+                return redirect('define_availability')
+            
+            if Availability.objects.filter(
+                teacher=request.user,
+                date=date_obj,
+                time=time_obj
+            ).exists():
+                messages.error(request, 'Você já definiu disponibilidade para esta data e horário.')
+                return redirect('define_availability')
+            
+            Availability.objects.create(
+                teacher=request.user,
+                date=date_obj,
+                time=time_obj
+            )
+            messages.success(request, 'Disponibilidade adicionada com sucesso!')
+            
+        except ValueError:
+            messages.error(request, 'Data ou hora em formato inválido.')
+        
         return redirect('define_availability')
     
-    availabilities = Availability.objects.filter(teacher=request.user).order_by('date', 'time')
-    return render(request, 'define_availability.html', {'availabilities': availabilities})
+    current_datetime = timezone.now()
+    availabilities = Availability.objects.filter(
+        teacher=request.user,
+        date__gte=current_datetime.date()
+    ).order_by('date', 'time')
+    
+    if availabilities.filter(date=current_datetime.date()).exists():
+        availabilities = availabilities.exclude(
+            date=current_datetime.date(),
+            time__lte=current_datetime.time()
+        )
+    
+    return render(request, 'define_availability.html', {
+        'availabilities': availabilities,
+        'now': timezone.now()
+    })
 
 @login_required
 @user_passes_test(is_teacher)

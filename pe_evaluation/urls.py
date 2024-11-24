@@ -21,5 +21,6 @@ path('student-dashboard/schedule-appointment/', views.schedule_appointment, name
     path('teacher-dashboard/delete-availability/<int:availability_id>/', views.delete_availability, name='delete_availability'),
     path('update-exercise-status/', views.update_exercise_status, name='update_exercise_status'),
     path('teacher-progress/<int:student_id>/', views.teacher_training_progress, name='teacher_training_progress'),
+    path('appointment/cancel/<int:appointment_id>/', views.cancel_appointment, name='cancel_appointment'),
     path('logout/', views.logout_view, name='logout'),
 ]
