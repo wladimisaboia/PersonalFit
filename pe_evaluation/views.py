@@ -5,7 +5,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib import messages
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth.models import User
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseBadRequest
 from .models import (
     Student, 
     TrainingPlan, 
@@ -18,8 +18,8 @@ from .models import (
 from .forms import StudentRegistrationForm, TrainingPlanForm, LoginForm
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
-from django.http import JsonResponse
 from datetime import datetime
+from django.urls import reverse
 
 def home(request):
     return render(request, 'home.html')
@@ -78,7 +78,7 @@ def student_dashboard(request):
         weight_trend = f"{'↑' if weight_change > 0 else '↓'} {abs(weight_change):.1f} kg desde o início"
     else:
         initial_weight = current_weight
-        percentage_change = 0  # 0% de mudança inicial
+        percentage_change = 0
         weight_trend = "Peso inicial"
 
     height = student.height
@@ -269,7 +269,11 @@ def logout_view(request):
     return redirect('home')
 
 @login_required
+@require_http_methods(["GET", "POST"])
 def schedule_appointment(request):
+    # Verificação adicional de AJAX
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+    
     current_datetime = timezone.now()
     
     available_slots = Availability.objects.filter(
@@ -282,9 +286,16 @@ def schedule_appointment(request):
             date=current_datetime.date(),
             time__lte=current_datetime.time()
         )
-
+    
     if request.method == 'POST':
+        if not is_ajax:
+            return HttpResponseBadRequest(json.dumps({
+                'status': 'error', 
+                'message': 'Requisição inválida'
+            }), content_type='application/json')
+        
         slot_id = request.POST.get('slot_id')
+        
         try:
             slot = Availability.objects.get(id=slot_id, is_booked=False)
             
@@ -294,16 +305,20 @@ def schedule_appointment(request):
             )
             
             if slot_datetime <= timezone.now():
-                messages.error(request, 'Este horário não está mais disponível. Por favor, escolha outro horário.')
-                return redirect('schedule_appointment')
+                return JsonResponse({
+                    'status': 'error', 
+                    'message': 'Este horário não está mais disponível. Por favor, escolha outro horário.'
+                }, status=400)
             
             if Appointment.objects.filter(
                 student=request.user.student,
                 date=slot.date,
                 time=slot.time
             ).exists():
-                messages.error(request, 'Você já possui uma consulta agendada para este horário.')
-                return redirect('schedule_appointment')
+                return JsonResponse({
+                    'status': 'error', 
+                    'message': 'Você já possui uma consulta agendada para este horário.'
+                }, status=400)
             
             slot.is_booked = True
             slot.save()
@@ -314,15 +329,28 @@ def schedule_appointment(request):
                 time=slot.time
             )
             
-            messages.success(request, f'Consulta agendada com sucesso para {slot.date|date:"d/m/Y"} às {slot.time|time:"H:i"}!')
-            return redirect('student_dashboard')
+            return JsonResponse({
+                'status': 'success', 
+                'message': f'Consulta agendada com sucesso!',
+                'redirect_url': reverse('student_dashboard')
+            })
             
         except Availability.DoesNotExist:
-            messages.error(request, 'O horário selecionado não está mais disponível. Por favor, escolha outro horário.')
-            return redirect('schedule_appointment')
+            return JsonResponse({
+                'status': 'error', 
+                'message': 'O horário selecionado não está mais disponível. Por favor, escolha outro horário.'
+            }, status=400)
         except Exception as e:
-            messages.error(request, 'Ocorreu um erro ao agendar a consulta. Por favor, tente novamente.')
-            return redirect('schedule_appointment')
+            return JsonResponse({
+                'status': 'error', 
+                'message': 'Ocorreu um erro ao agendar a consulta. Por favor, tente novamente.'
+            }, status=500)
+    
+    if is_ajax:
+        return JsonResponse({
+            'status': 'success',
+            'available_slots': list(available_slots.values('id', 'date', 'time'))
+        })
     
     return render(request, 'schedule_appointment.html', {
         'available_slots': available_slots

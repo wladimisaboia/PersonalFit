@@ -231,3 +231,68 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+
+document.addEventListener('DOMContentLoaded', function() {
+    const scheduleForm = document.getElementById('schedule-form');
+    const scheduleSubmit = document.getElementById('schedule-submit');
+
+    if (scheduleForm && scheduleSubmit) {
+        scheduleForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const formData = new FormData(scheduleForm);
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            scheduleSubmit.disabled = true;
+            scheduleSubmit.textContent = 'Agendando...';
+
+            fetch(scheduleForm.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+                
+                return response.text().then(text => {
+                    console.log('Response text:', text);
+                    
+                    // Tenta fazer parse do JSON
+                    try {
+                        return JSON.parse(text);
+                    } catch (e) {
+                        throw new Error('Resposta inválida: ' + text);
+                    }
+                });
+            })
+            .then(data => {
+                if (data.status === 'success') {
+                    showNotification(data.message, 'success');
+                    
+                    // Redirecionar para o dashboard após 2 segundos
+                    setTimeout(() => {
+                        window.location.href = data.redirect_url || '{% url "student_dashboard" %}';
+                    }, 2000);
+                } else {
+                    throw new Error(data.message || 'Erro ao agendar consulta');
+                }
+            })
+            .catch(error => {
+                console.error('Erro completo:', error);
+                showNotification(error.message || 'Não foi possível agendar a consulta.', 'error');
+            })
+            .finally(() => {
+                scheduleSubmit.disabled = false;
+                scheduleSubmit.textContent = 'Agendar Consulta';
+            });
+        });
+    }
+});
+
+
+
