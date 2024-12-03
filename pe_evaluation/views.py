@@ -24,20 +24,39 @@ from django.urls import reverse
 def home(request):
     return render(request, 'home.html')
 
+@require_http_methods(["GET", "POST"])
 def login_view(request):
     if request.method == 'POST':
         form = LoginForm(data=request.POST)
         if form.is_valid():
             user = form.get_user()
             login(request, user)
+            
+            # Check if it's an AJAX request
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'status': 'success', 
+                    'message': 'Login efetuado com sucesso!',
+                    'redirect_url': reverse('teacher_dashboard') if user.is_staff else reverse('student_dashboard')
+                })
+            
+            # Fallback for non-AJAX requests
             if user.is_staff:
                 return redirect('teacher_dashboard')
             else:
                 return redirect('student_dashboard')
-    else:
-        form = LoginForm()
+        else:
+            # Handle invalid login
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'status': 'error', 
+                    'message': 'Usuário ou senha inválidos.'
+                }, status=400)
+    
+    form = LoginForm()
     return render(request, 'login.html', {'form': form})
 
+@require_http_methods(["GET", "POST"])
 def register(request):
     if request.method == 'POST':
         form = StudentRegistrationForm(request.POST)
@@ -59,9 +78,29 @@ def register(request):
                 )
             
             login(request, user)
+            
+            # Check if it's an AJAX request
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'status': 'success', 
+                    'message': 'Cadastro realizado com sucesso!',
+                    'redirect_url': reverse('student_dashboard')
+                })
+            
+            # Fallback for non-AJAX requests
             return redirect('student_dashboard')
-    else:
-        form = StudentRegistrationForm()
+        else:
+            # Handle registration errors
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                # Collect all form errors
+                errors = form.errors.get_json_data()
+                return JsonResponse({
+                    'status': 'error', 
+                    'message': 'Erro no cadastro. Verifique os campos.',
+                    'errors': errors
+                }, status=400)
+    
+    form = StudentRegistrationForm()
     return render(request, 'register.html', {'form': form})
 
 @login_required

@@ -262,7 +262,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 return response.text().then(text => {
                     console.log('Response text:', text);
                     
-                    // Tenta fazer parse do JSON
                     try {
                         return JSON.parse(text);
                     } catch (e) {
@@ -274,7 +273,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (data.status === 'success') {
                     showNotification(data.message, 'success');
                     
-                    // Redirecionar para o dashboard após 2 segundos
                     setTimeout(() => {
                         window.location.href = data.redirect_url || '{% url "student_dashboard" %}';
                     }, 2000);
@@ -289,6 +287,116 @@ document.addEventListener('DOMContentLoaded', function() {
             .finally(() => {
                 scheduleSubmit.disabled = false;
                 scheduleSubmit.textContent = 'Agendar Consulta';
+            });
+        });
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Login Form Handling
+    const loginForm = document.getElementById('login-form');
+    const loginSubmit = document.getElementById('login-submit');
+
+    if (loginForm && loginSubmit) {
+        loginForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const formData = new FormData(loginForm);
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            loginSubmit.disabled = true;
+            loginSubmit.textContent = 'Entrando...';
+
+            fetch(loginForm.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => {
+                return response.text().then(text => {
+                    try {
+                        return JSON.parse(text);
+                    } catch (e) {
+                        throw new Error('Resposta inválida: ' + text);
+                    }
+                });
+            })
+            .then(data => {
+                if (data.status === 'success') {
+                    showNotification(data.message, 'success');
+                    
+                    setTimeout(() => {
+                        window.location.href = data.redirect_url;
+                    }, 2000);
+                } else {
+                    throw new Error(data.message || 'Erro ao fazer login');
+                }
+            })
+            .catch(error => {
+                console.error('Erro completo:', error);
+                showNotification(error.message || 'Não foi possível fazer login.', 'error');
+            })
+            .finally(() => {
+                loginSubmit.disabled = false;
+                loginSubmit.textContent = 'Entrar';
+            });
+        });
+    }
+
+    // Register Form Handling
+    const registerForm = document.getElementById('register-form');
+    const registerSubmit = document.getElementById('register-submit');
+
+    if (registerForm && registerSubmit) {
+        registerForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const formData = new FormData(registerForm);
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            registerSubmit.disabled = true;
+            registerSubmit.textContent = 'Cadastrando...';
+
+            fetch(registerForm.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => {
+                return response.text().then(text => {
+                    try {
+                        return JSON.parse(text);
+                    } catch (e) {
+                        throw new Error('Resposta inválida: ' + text);
+                    }
+                });
+            })
+            .then(data => {
+                if (data.status === 'success') {
+                    showNotification(data.message, 'success');
+                    
+                    setTimeout(() => {
+                        window.location.href = data.redirect_url;
+                    }, 2000);
+                } else {
+                    throw new Error(data.message || 'Erro ao se cadastrar');
+                }
+            })
+            .catch(error => {
+                console.error('Erro completo:', error);
+                showNotification(error.message || 'Não foi possível fazer o cadastro.', 'error');
+            })
+            .finally(() => {
+                registerSubmit.disabled = false;
+                registerSubmit.textContent = 'Cadastrar';
             });
         });
     }

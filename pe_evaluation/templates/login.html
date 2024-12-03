@@ -1,5 +1,4 @@
 {% load static %}
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,21 +11,21 @@
     <header class="header-modern">
         <h1>PersonalFit</h1>
     </header>
-
     <main class="main-content">
         <section class="form-container">
             <h2>Entrar</h2>
-            <form method="post">
+            <form id="login-form" method="post">
                 {% csrf_token %}
                 {{ form.as_p }}
-                <button type="submit" class="btn btn-large">Entrar</button>
+                <button type="submit" id="login-submit" class="btn btn-large">Entrar</button>
             </form>
             <p>Não tem uma conta? <a href="{% url 'register' %}">Cadastre-se</a></p>
         </section>
     </main>
-
     <footer class="footer-modern">
         <p>&copy; 2024 PersonalFit. Todos os direitos reservados.</p>
     </footer>
+    
+    <script src="{% static 'js/main.js' %}"></script>
 </body>
 </html>
