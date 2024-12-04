@@ -8,10 +8,8 @@
     <div class="dashboard-container">
         <h2>Seus Planos de Treino</h2>
         
-        <!-- Meta tag para CSRF Token -->
         <meta name="csrf-token" content="{{ csrf_token }}">
         
-        <!-- Div para armazenar URLs dinâmicas -->
         <div id="urls" data-update-status-url="{% url 'update_exercise_status' %}"></div>
         
         <div class="progress-chart-container">
@@ -21,7 +19,7 @@
         <div class="training-plans">
             {% for plan in training_plans %}
                 <div class="plan-item">
-                    <h4>Plano criado em {{ plan.created_at }}</h4>
+                    <h4>Plano criado em {{ plan.created_at|date:"d/m/Y, H:i" }}</h4>
                     {% for exercise_status in plan.exercise_statuses.all %}
                         <div class="exercise-item">
                             <p>{{ exercise_status.exercise_description }}</p>
