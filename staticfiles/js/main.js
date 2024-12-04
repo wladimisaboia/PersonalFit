@@ -231,3 +231,335 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+
+document.addEventListener('DOMContentLoaded', function() {
+    const scheduleForm = document.getElementById('schedule-form');
+    const scheduleSubmit = document.getElementById('schedule-submit');
+
+    if (scheduleForm && scheduleSubmit) {
+        scheduleForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const formData = new FormData(scheduleForm);
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            scheduleSubmit.disabled = true;
+            scheduleSubmit.textContent = 'Agendando...';
+
+            fetch(scheduleForm.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+                
+                return response.text().then(text => {
+                    console.log('Response text:', text);
+                    
+                    try {
+                        return JSON.parse(text);
+                    } catch (e) {
+                        throw new Error('Resposta inválida: ' + text);
+                    }
+                });
+            })
+            .then(data => {
+                if (data.status === 'success') {
+                    showNotification(data.message, 'success');
+                    
+                    setTimeout(() => {
+                        window.location.href = data.redirect_url || '{% url "student_dashboard" %}';
+                    }, 2000);
+                } else {
+                    throw new Error(data.message || 'Erro ao agendar consulta');
+                }
+            })
+            .catch(error => {
+                console.error('Erro completo:', error);
+                showNotification(error.message || 'Não foi possível agendar a consulta.', 'error');
+            })
+            .finally(() => {
+                scheduleSubmit.disabled = false;
+                scheduleSubmit.textContent = 'Agendar Consulta';
+            });
+        });
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Login Form Handling
+    const loginForm = document.getElementById('login-form');
+    const loginSubmit = document.getElementById('login-submit');
+
+    if (loginForm && loginSubmit) {
+        loginForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const formData = new FormData(loginForm);
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            loginSubmit.disabled = true;
+            loginSubmit.textContent = 'Entrando...';
+
+            fetch(loginForm.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => {
+                return response.text().then(text => {
+                    try {
+                        return JSON.parse(text);
+                    } catch (e) {
+                        throw new Error('Resposta inválida: ' + text);
+                    }
+                });
+            })
+            .then(data => {
+                if (data.status === 'success') {
+                    showNotification(data.message, 'success');
+                    
+                    setTimeout(() => {
+                        window.location.href = data.redirect_url;
+                    }, 2000);
+                } else {
+                    throw new Error(data.message || 'Erro ao fazer login');
+                }
+            })
+            .catch(error => {
+                console.error('Erro completo:', error);
+                showNotification(error.message || 'Não foi possível fazer login.', 'error');
+            })
+            .finally(() => {
+                loginSubmit.disabled = false;
+                loginSubmit.textContent = 'Entrar';
+            });
+        });
+    }
+
+    // Register Form Handling
+    const registerForm = document.getElementById('register-form');
+    const registerSubmit = document.getElementById('register-submit');
+
+    if (registerForm && registerSubmit) {
+        registerForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const formData = new FormData(registerForm);
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            registerSubmit.disabled = true;
+            registerSubmit.textContent = 'Cadastrando...';
+
+            fetch(registerForm.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => {
+                return response.text().then(text => {
+                    try {
+                        return JSON.parse(text);
+                    } catch (e) {
+                        throw new Error('Resposta inválida: ' + text);
+                    }
+                });
+            })
+            .then(data => {
+                if (data.status === 'success') {
+                    showNotification(data.message, 'success');
+                    
+                    setTimeout(() => {
+                        window.location.href = data.redirect_url;
+                    }, 2000);
+                } else {
+                    throw new Error(data.message || 'Erro ao se cadastrar');
+                }
+            })
+            .catch(error => {
+                console.error('Erro completo:', error);
+                showNotification(error.message || 'Não foi possível fazer o cadastro.', 'error');
+            })
+            .finally(() => {
+                registerSubmit.disabled = false;
+                registerSubmit.textContent = 'Cadastrar';
+            });
+        });
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    const availabilityForm = document.getElementById('availability-form');
+    const availabilitySubmit = document.getElementById('availability-submit');
+
+    if (availabilityForm && availabilitySubmit) {
+        availabilityForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const formData = new FormData(availabilityForm);
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            availabilitySubmit.disabled = true;
+            availabilitySubmit.textContent = 'Adicionando...';
+
+            fetch(availabilityForm.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => {
+                return response.text().then(text => {
+                    try {
+                        return JSON.parse(text);
+                    } catch (e) {
+                        throw new Error('Resposta inválida: ' + text);
+                    }
+                });
+            })
+            .then(data => {
+                if (data.status === 'success') {
+                    showNotification(data.message, 'success');
+                    
+                    setTimeout(() => {
+                        window.location.href = data.redirect_url;
+                    }, 2000);
+                } else {
+                    throw new Error(data.message || 'Erro ao adicionar disponibilidade');
+                }
+            })
+            .catch(error => {
+                console.error('Erro completo:', error);
+                showNotification(error.message || 'Não foi possível adicionar disponibilidade.', 'error');
+            })
+            .finally(() => {
+                availabilitySubmit.disabled = false;
+                availabilitySubmit.textContent = 'Adicionar Disponibilidade';
+            });
+        });
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    const trainingForm = document.getElementById('training-form');
+    const trainingSubmit = document.querySelector('button[type="submit"]');
+    if (trainingForm && trainingSubmit) {
+        trainingForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = new FormData(trainingForm);
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            
+            trainingSubmit.disabled = true;
+            trainingSubmit.textContent = 'Atribuindo...';
+            fetch('', {  // URL vazia para submeter para a mesma URL atual
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => {
+                return response.text().then(text => {
+                    try {
+                        return JSON.parse(text);
+                    } catch (e) {
+                        throw new Error('Resposta inválida: ' + text);
+                    }
+                });
+            })
+            .then(data => {
+                if (data.status === 'success') {
+                    showNotification(data.message, 'success');
+                    
+                    setTimeout(() => {
+                        window.location.href = data.redirect_url;
+                    }, 2000);
+                } else {
+                    throw new Error(data.message || 'Erro ao atribuir treino');
+                }
+            })
+            .catch(error => {
+                console.error('Erro completo:', error);
+                showNotification(error.message || 'Não foi possível atribuir o treino.', 'error');
+            })
+            .finally(() => {
+                trainingSubmit.disabled = false;
+                trainingSubmit.textContent = 'Atribuir Plano';
+            });
+        });
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    const studentUpdateForm = document.getElementById('student-update-form');
+    const studentUpdateSubmit = document.querySelector('button[type="submit"]');
+    
+    if (studentUpdateForm && studentUpdateSubmit) {
+        studentUpdateForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = new FormData(studentUpdateForm);
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            
+            studentUpdateSubmit.disabled = true;
+            studentUpdateSubmit.textContent = 'Atualizando...';
+            
+            fetch('', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => {
+                return response.text().then(text => {
+                    try {
+                        return JSON.parse(text);
+                    } catch (e) {
+                        throw new Error('Resposta inválida: ' + text);
+                    }
+                });
+            })
+            .then(data => {
+                if (data.status === 'success') {
+                    showNotification(data.message, 'success');
+                    
+                    setTimeout(() => {
+                        window.location.href = data.redirect_url;
+                    }, 2000);
+                } else {
+                    throw new Error(data.message || 'Erro ao atualizar informações');
+                }
+            })
+            .catch(error => {
+                console.error('Erro completo:', error);
+                showNotification(error.message || 'Não foi possível atualizar as informações.', 'error');
+            })
+            .finally(() => {
+                studentUpdateSubmit.disabled = false;
+                studentUpdateSubmit.textContent = 'Atualizar Informações';
+            });
+        });
+    }
+});
+

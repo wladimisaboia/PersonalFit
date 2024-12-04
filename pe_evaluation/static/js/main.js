@@ -509,4 +509,57 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+document.addEventListener('DOMContentLoaded', function() {
+    const studentUpdateForm = document.getElementById('student-update-form');
+    const studentUpdateSubmit = document.querySelector('button[type="submit"]');
+    
+    if (studentUpdateForm && studentUpdateSubmit) {
+        studentUpdateForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = new FormData(studentUpdateForm);
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            
+            studentUpdateSubmit.disabled = true;
+            studentUpdateSubmit.textContent = 'Atualizando...';
+            
+            fetch('', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => {
+                return response.text().then(text => {
+                    try {
+                        return JSON.parse(text);
+                    } catch (e) {
+                        throw new Error('Resposta inválida: ' + text);
+                    }
+                });
+            })
+            .then(data => {
+                if (data.status === 'success') {
+                    showNotification(data.message, 'success');
+                    
+                    setTimeout(() => {
+                        window.location.href = data.redirect_url;
+                    }, 2000);
+                } else {
+                    throw new Error(data.message || 'Erro ao atualizar informações');
+                }
+            })
+            .catch(error => {
+                console.error('Erro completo:', error);
+                showNotification(error.message || 'Não foi possível atualizar as informações.', 'error');
+            })
+            .finally(() => {
+                studentUpdateSubmit.disabled = false;
+                studentUpdateSubmit.textContent = 'Atualizar Informações';
+            });
+        });
+    }
+});
 

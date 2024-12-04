@@ -229,29 +229,39 @@ def update_exercise_status(request):
 def student_update(request):
     student = request.user.student
     if request.method == 'POST':
-        new_weight = float(request.POST.get('new_weight'))
-        age = request.POST.get('age')
-        height = request.POST.get('height')
-        goal = request.POST.get('goal')
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            try:
+                new_weight = float(request.POST.get('new_weight'))
+                age = request.POST.get('age')
+                height = request.POST.get('height')
+                goal = request.POST.get('goal')
 
-        WeightHistory.objects.create(student=student, weight=new_weight)
+                WeightHistory.objects.create(student=student, weight=new_weight)
+                student.age = age
+                student.height = height
+                student.weight = new_weight
+                student.goal = goal
+                student.save()
 
-        student.age = age
-        student.height = height
-        student.weight = new_weight
-        student.goal = goal
-        student.save()
+                weight_history = student.weight_history.order_by('date_recorded')
+                if weight_history.exists():
+                    initial_weight = weight_history.first().weight
+                    weight_change = new_weight - initial_weight
+                    percentage_change = (weight_change / initial_weight) * 100
+                    message = f"Seu peso mudou em {percentage_change:.2f}% desde o início."
+                else:
+                    message = "Este é o seu primeiro registro de peso."
 
-        weight_history = student.weight_history.order_by('date_recorded')
-        if weight_history.exists():
-            initial_weight = weight_history.first().weight
-            weight_change = new_weight - initial_weight
-            percentage_change = (weight_change / initial_weight) * 100
-            message = f"Seu peso mudou em {percentage_change:.2f}% desde o início."
-        else:
-            message = "Este é o seu primeiro registro de peso."
-
-        return render(request, 'student_update.html', {'student': student, 'message': message})
+                return JsonResponse({
+                    'status': 'success', 
+                    'message': 'Informações atualizadas com sucesso!',
+                    'redirect_url': reverse('student_dashboard')
+                })
+            except Exception as e:
+                return JsonResponse({
+                    'status': 'error', 
+                    'message': str(e)
+                }, status=400)
     
     return render(request, 'student_update.html', {'student': student})
 
@@ -282,7 +292,6 @@ def assign_training_plan(request, user_id):
     student, created = Student.objects.get_or_create(user=user)
     
     if request.method == 'POST':
-        # Verifica se é uma requisição AJAX
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             try:
                 profile = request.POST.get('profile')
@@ -302,7 +311,6 @@ def assign_training_plan(request, user_id):
                     'message': str(e)
                 }, status=400)
     
-    # Resto do código permanece igual
     profiles = PredefinedTraining.PROFILE_CHOICES
     levels = PredefinedTraining.LEVEL_CHOICES
     goals = PredefinedTraining.objects.values_list('goal', flat=True).distinct()
