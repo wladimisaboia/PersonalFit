@@ -468,7 +468,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             trainingSubmit.disabled = true;
             trainingSubmit.textContent = 'Atribuindo...';
-            fetch('', {  // URL vazia para submeter para a mesma URL atual
+            fetch('', {  
                 method: 'POST',
                 body: formData,
                 headers: {

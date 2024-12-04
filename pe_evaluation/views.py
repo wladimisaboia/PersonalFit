@@ -79,7 +79,6 @@ def register(request):
             
             login(request, user)
             
-            # Check if it's an AJAX request
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return JsonResponse({
                     'status': 'success', 
@@ -87,7 +86,6 @@ def register(request):
                     'redirect_url': reverse('student_dashboard')
                 })
             
-            # Fallback for non-AJAX requests
             return redirect('student_dashboard')
         else:
             # Handle registration errors
