@@ -561,12 +561,22 @@ def define_availability(request):
 @user_passes_test(is_teacher)
 def delete_availability(request, availability_id):
     availability = get_object_or_404(Availability, id=availability_id, teacher=request.user)
+    
     if request.method == 'POST':
         if availability.is_booked:
-            Appointment.objects.filter(date=availability.date, time=availability.time).delete()
+            return JsonResponse({
+                'status': 'error', 
+                'message': 'Não é possível cancelar esta disponibilidade'
+            }, status=400)
+        
         availability.delete()
-        messages.success(request, 'Disponibilidade cancelada com sucesso!')
-        return redirect('define_availability')
+        
+        return JsonResponse({
+            'status': 'success', 
+            'message': 'Disponibilidade excluída com sucesso!',
+            'redirect_url': reverse('define_availability')
+        })
+    
     return render(request, 'confirm_delete_availability.html', {'availability': availability})
 
 

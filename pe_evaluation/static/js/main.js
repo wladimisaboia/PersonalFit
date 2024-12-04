@@ -563,3 +563,59 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+document.addEventListener('DOMContentLoaded', function() {
+    const availabilityList = document.querySelector('.availability-list');
+    
+    if (availabilityList) {
+        availabilityList.addEventListener('submit', function(event) {
+            // Verifica se o botão de cancelamento foi clicado
+            if (event.target.tagName === 'FORM' && event.target.querySelector('button[type="submit"]')) {
+                event.preventDefault();
+                const form = event.target;
+                const url = form.action;
+                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                const submitButton = form.querySelector('button[type="submit"]');
+                
+                submitButton.disabled = true;
+                submitButton.textContent = 'Cancelando...';
+                
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrfToken,
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(response => {
+                    return response.text().then(text => {
+                        try {
+                            return JSON.parse(text);
+                        } catch (e) {
+                            throw new Error('Resposta inválida: ' + text);
+                        }
+                    });
+                })
+                .then(data => {
+                    if (data.status === 'success') {
+                        showNotification(data.message, 'success');
+                        
+                        setTimeout(() => {
+                            window.location.href = data.redirect_url;
+                        }, 2000);
+                    } else {
+                        showNotification(data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro completo:', error);
+                    showNotification('Erro ao processar solicitação', 'error');
+                })
+                .finally(() => {
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Cancelar';
+                });
+            }
+        });
+    }
+});

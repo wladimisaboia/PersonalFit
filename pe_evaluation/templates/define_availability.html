@@ -37,7 +37,10 @@
                         {% else %}
                             Disponível
                         {% endif %}
-                        <form method="post" action="{% url 'delete_availability' availability.id %}" style="display:inline;">
+                        <form id="delete-availability-{{ availability.id }}" 
+                              method="post" 
+                              action="{% url 'delete_availability' availability.id %}" 
+                              style="display:inline;">
                             {% csrf_token %}
                             <button type="submit" class="btn btn-small btn-danger">Cancelar</button>
                         </form>
