@@ -280,21 +280,32 @@ def teacher_appointments(request):
 def assign_training_plan(request, user_id):
     user = get_object_or_404(User, id=user_id)
     student, created = Student.objects.get_or_create(user=user)
-
+    
     if request.method == 'POST':
-        profile = request.POST.get('profile')
-        level = request.POST.get('level')
-        goal = request.POST.get('goal')
-
-        training = get_object_or_404(PredefinedTraining, profile=profile, level=level, goal=goal)
-        student.training_plans.create(plan_details=training.description)
-        messages.success(request, 'Plano de treino atribuído com sucesso!')
-        return redirect('teacher_dashboard')
-
+        # Verifica se é uma requisição AJAX
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            try:
+                profile = request.POST.get('profile')
+                level = request.POST.get('level')
+                goal = request.POST.get('goal')
+                training = get_object_or_404(PredefinedTraining, profile=profile, level=level, goal=goal)
+                student.training_plans.create(plan_details=training.description)
+                
+                return JsonResponse({
+                    'status': 'success', 
+                    'message': 'Treino atribuído com sucesso!',
+                    'redirect_url': reverse('teacher_dashboard')
+                })
+            except Exception as e:
+                return JsonResponse({
+                    'status': 'error', 
+                    'message': str(e)
+                }, status=400)
+    
+    # Resto do código permanece igual
     profiles = PredefinedTraining.PROFILE_CHOICES
     levels = PredefinedTraining.LEVEL_CHOICES
     goals = PredefinedTraining.objects.values_list('goal', flat=True).distinct()
-
     return render(request, 'assign_training_plan.html', {
         'student': student,
         'profiles': profiles,
@@ -310,7 +321,6 @@ def logout_view(request):
 @login_required
 @require_http_methods(["GET", "POST"])
 def schedule_appointment(request):
-    # Verificação adicional de AJAX
     is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
     
     current_datetime = timezone.now()
@@ -412,7 +422,6 @@ def cancel_appointment(request, appointment_id):
         availability.is_booked = False
         availability.save()
         
-        # Remove o agendamento
         appointment.delete()
         
         messages.success(request, 'Agendamento cancelado com sucesso.')
@@ -479,6 +488,11 @@ def define_availability(request):
             )
             
             if slot_datetime <= timezone.now():
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return JsonResponse({
+                        'status': 'error', 
+                        'message': 'Não é possível adicionar disponibilidade para uma data/hora que já passou.'
+                    }, status=400)
                 messages.error(request, 'Não é possível adicionar disponibilidade para uma data/hora que já passou.')
                 return redirect('define_availability')
             
@@ -487,6 +501,11 @@ def define_availability(request):
                 date=date_obj,
                 time=time_obj
             ).exists():
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return JsonResponse({
+                        'status': 'error', 
+                        'message': 'Você já definiu disponibilidade para esta data e horário.'
+                    }, status=400)
                 messages.error(request, 'Você já definiu disponibilidade para esta data e horário.')
                 return redirect('define_availability')
             
@@ -495,9 +514,22 @@ def define_availability(request):
                 date=date_obj,
                 time=time_obj
             )
+            
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'status': 'success', 
+                    'message': 'Disponibilidade adicionada com sucesso!',
+                    'redirect_url': reverse('define_availability')
+                })
+            
             messages.success(request, 'Disponibilidade adicionada com sucesso!')
             
         except ValueError:
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'status': 'error', 
+                    'message': 'Data ou hora em formato inválido.'
+                }, status=400)
             messages.error(request, 'Data ou hora em formato inválido.')
         
         return redirect('define_availability')

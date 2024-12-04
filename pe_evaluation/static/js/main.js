@@ -402,5 +402,111 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+document.addEventListener('DOMContentLoaded', function() {
+    const availabilityForm = document.getElementById('availability-form');
+    const availabilitySubmit = document.getElementById('availability-submit');
+
+    if (availabilityForm && availabilitySubmit) {
+        availabilityForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const formData = new FormData(availabilityForm);
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            availabilitySubmit.disabled = true;
+            availabilitySubmit.textContent = 'Adicionando...';
+
+            fetch(availabilityForm.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => {
+                return response.text().then(text => {
+                    try {
+                        return JSON.parse(text);
+                    } catch (e) {
+                        throw new Error('Resposta inválida: ' + text);
+                    }
+                });
+            })
+            .then(data => {
+                if (data.status === 'success') {
+                    showNotification(data.message, 'success');
+                    
+                    setTimeout(() => {
+                        window.location.href = data.redirect_url;
+                    }, 2000);
+                } else {
+                    throw new Error(data.message || 'Erro ao adicionar disponibilidade');
+                }
+            })
+            .catch(error => {
+                console.error('Erro completo:', error);
+                showNotification(error.message || 'Não foi possível adicionar disponibilidade.', 'error');
+            })
+            .finally(() => {
+                availabilitySubmit.disabled = false;
+                availabilitySubmit.textContent = 'Adicionar Disponibilidade';
+            });
+        });
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    const trainingForm = document.getElementById('training-form');
+    const trainingSubmit = document.querySelector('button[type="submit"]');
+    if (trainingForm && trainingSubmit) {
+        trainingForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = new FormData(trainingForm);
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            
+            trainingSubmit.disabled = true;
+            trainingSubmit.textContent = 'Atribuindo...';
+            fetch('', {  // URL vazia para submeter para a mesma URL atual
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => {
+                return response.text().then(text => {
+                    try {
+                        return JSON.parse(text);
+                    } catch (e) {
+                        throw new Error('Resposta inválida: ' + text);
+                    }
+                });
+            })
+            .then(data => {
+                if (data.status === 'success') {
+                    showNotification(data.message, 'success');
+                    
+                    setTimeout(() => {
+                        window.location.href = data.redirect_url;
+                    }, 2000);
+                } else {
+                    throw new Error(data.message || 'Erro ao atribuir treino');
+                }
+            })
+            .catch(error => {
+                console.error('Erro completo:', error);
+                showNotification(error.message || 'Não foi possível atribuir o treino.', 'error');
+            })
+            .finally(() => {
+                trainingSubmit.disabled = false;
+                trainingSubmit.textContent = 'Atribuir Plano';
+            });
+        });
+    }
+});
 
 

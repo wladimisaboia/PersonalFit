@@ -5,8 +5,9 @@
 {% block content %}
 <div class="container">
     <h2>Atribuir Plano de Treino para {{ student.user.username }}</h2>
-    <form method="post">
+    <form method="post" id="training-form">
         {% csrf_token %}
+        
         <div class="form-group">
             <label for="profile">Perfil:</label>
             <select name="profile" id="profile" class="form-control" required>
@@ -15,6 +16,7 @@
                 {% endfor %}
             </select>
         </div>
+        
         <div class="form-group">
             <label for="level">Nível:</label>
             <select name="level" id="level" class="form-control" required>
@@ -23,6 +25,7 @@
                 {% endfor %}
             </select>
         </div>
+        
         <div class="form-group">
             <label for="goal">Objetivo:</label>
             <select name="goal" id="goal" class="form-control" required>
@@ -31,8 +34,11 @@
                 {% endfor %}
             </select>
         </div>
+        
         <button type="submit" class="btn btn-primary">Atribuir Plano</button>
     </form>
+    <br>
+    
     <a href="{% url 'teacher_dashboard' %}" class="btn btn-outline">Voltar</a>
 </div>
 {% endblock %}

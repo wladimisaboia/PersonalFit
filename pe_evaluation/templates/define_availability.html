@@ -3,7 +3,7 @@
 {% block content %}
 <div class="container">
     <h2>Definir Disponibilidade</h2>
-    <form method="post">
+    <form id="availability-form" method="post">
         {% csrf_token %}
         <div class="form-group">
             <label for="id_date">Data:</label>
@@ -22,7 +22,7 @@
                    class="form-control" 
                    required>
         </div>
-        <button type="submit" class="btn">Adicionar Disponibilidade</button>
+        <button type="submit" id="availability-submit" class="btn">Adicionar Disponibilidade</button>
     </form>
     <br>
     <h3>Suas Disponibilidades</h3>
